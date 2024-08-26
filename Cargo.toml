@@ -1,0 +1,12 @@
+[package]
+name = "const-rsa"
+authors = ["Leon Farafonov <leofaraf@proton.me>"]
+version = "0.0.1"
+edition = "2021"
+
+[lib]
+proc_macro = true
+
+[dependencies]
+rand = "0.8.5"
+rsa = "0.9.6"
