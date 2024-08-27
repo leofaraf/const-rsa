@@ -1,5 +1,6 @@
 use proc_macro::{Literal, TokenStream, TokenTree};
-use rsa::{pkcs1::{EncodeRsaPrivateKey, EncodeRsaPublicKey}, Pkcs1v15Encrypt, RsaPrivateKey, RsaPublicKey};
+use rsa::{pkcs1::{DecodeRsaPrivateKey, EncodeRsaPrivateKey, EncodeRsaPublicKey}, Pkcs1v15Encrypt, RsaPrivateKey, RsaPublicKey};
+use syn::{parse_macro_input, LitByteStr};
 
 /// Creates RSA private key.
 fn create_private_key(bits: usize) -> RsaPrivateKey {
@@ -46,37 +47,32 @@ pub fn generate_private_key(_item: TokenStream) -> TokenStream {
 }
 
 #[proc_macro]
-pub fn generate_public_key(_item: TokenStream) -> TokenStream {
+pub fn encrypt_from_pkcs1_der(_item: TokenStream) -> TokenStream {
     todo!()
 }
 
 #[proc_macro]
-/// Accepts private key der pkcs1.
-/// Returns pkcs1_der public key as bytes (`&[u8]`)
-pub fn generate_public_key_from_private_key(_item: TokenStream) -> TokenStream {
-    let priv_key: RsaPrivateKey = todo!();
-    token_stream_string_from_bytes(
-        priv_key.to_public_key().to_pkcs1_der().unwrap().as_bytes()
-    ).parse().unwrap()
-}
-
-#[proc_macro]
-pub fn encrypt_string(_item: TokenStream) -> TokenStream {
+pub fn encrypt_from_pkcs1_pem(_item: TokenStream) -> TokenStream {
     todo!()
 }
 
 #[proc_macro]
-pub fn encrypt_bytes(_item: TokenStream) -> TokenStream {
+pub fn encrypt_from_pkcs1_der_private(_item: TokenStream) -> TokenStream {
     todo!()
 }
 
 #[proc_macro]
-pub fn decrypt_string(_item: TokenStream) -> TokenStream {
+pub fn encrypt_from_pkcs1_pem_private(_item: TokenStream) -> TokenStream {
     todo!()
 }
 
 #[proc_macro]
-pub fn decrypt_bytes(_item: TokenStream) -> TokenStream {
+pub fn decrypt_from_pkcs1_der_private(_item: TokenStream) -> TokenStream {
+    todo!()
+}
+
+#[proc_macro]
+pub fn decrypt_from_pkcs1_pem_private(_item: TokenStream) -> TokenStream {
     todo!()
 }
 
