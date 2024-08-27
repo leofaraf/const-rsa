@@ -1,5 +1,5 @@
 use proc_macro::{Literal, TokenStream, TokenTree};
-use rsa::{pkcs1::EncodeRsaPrivateKey, Pkcs1v15Encrypt, RsaPrivateKey, RsaPublicKey};
+use rsa::{pkcs1::{EncodeRsaPrivateKey, EncodeRsaPublicKey}, Pkcs1v15Encrypt, RsaPrivateKey, RsaPublicKey};
 
 /// Creates RSA private key.
 fn create_private_key(bits: usize) -> RsaPrivateKey {
@@ -24,21 +24,25 @@ fn bits_from_token_stream(_item: TokenStream) -> usize {
     }
 }
 
+fn token_stream_string_from_bytes(bytes: &[u8]) -> String {
+    format!("&[{}]", bytes
+        .iter().map(|b| format!("{:}", b)).collect::<Vec<String>>()
+        .join(", ")
+    )
+}
+
 #[proc_macro]
 /// Accepts token steam.
 /// If token stream contains `usize`, then sets it as private key bits, 
 /// If not contains, then sets `2048` as private key bits.
-/// Returns pkcs1_der as bytes (`&'static [u8]`)
+/// Returns pkcs1_der private key as bytes (`&[u8]`)
 pub fn generate_private_key(_item: TokenStream) -> TokenStream {
     let bits = bits_from_token_stream(_item);
     let priv_key = create_private_key(bits);
 
-    format!("&[{}]",
-    priv_key.to_pkcs1_der().unwrap().as_bytes()
-    .iter().map(|b| format!("{:}", b)).collect::<Vec<String>>()
-    .join(", ")
-    )
-    .parse().unwrap()
+    token_stream_string_from_bytes(
+        priv_key.to_pkcs1_der().unwrap().as_bytes()
+    ).parse().unwrap()
 }
 
 #[proc_macro]
@@ -47,8 +51,13 @@ pub fn generate_public_key(_item: TokenStream) -> TokenStream {
 }
 
 #[proc_macro]
+/// Accepts private key der pkcs1.
+/// Returns pkcs1_der public key as bytes (`&[u8]`)
 pub fn generate_public_key_from_private_key(_item: TokenStream) -> TokenStream {
-    todo!()
+    let priv_key: RsaPrivateKey = todo!();
+    token_stream_string_from_bytes(
+        priv_key.to_public_key().to_pkcs1_der().unwrap().as_bytes()
+    ).parse().unwrap()
 }
 
 #[proc_macro]
