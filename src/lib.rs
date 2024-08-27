@@ -42,6 +42,16 @@ pub fn generate_private_key(_item: TokenStream) -> TokenStream {
 }
 
 #[proc_macro]
+pub fn generate_public_key(_item: TokenStream) -> TokenStream {
+    todo!()
+}
+
+#[proc_macro]
+pub fn generate_public_key_from_private_key(_item: TokenStream) -> TokenStream {
+    todo!()
+}
+
+#[proc_macro]
 pub fn encrypt_string(_item: TokenStream) -> TokenStream {
     todo!()
 }
