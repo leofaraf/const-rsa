@@ -1,7 +1,7 @@
 use proc_macro::{Literal, TokenStream, TokenTree};
 use rsa::{pkcs1::EncodeRsaPrivateKey, Pkcs1v15Encrypt, RsaPrivateKey, RsaPublicKey};
 
-
+/// Creates RSA private key
 fn create_private_key(bits: usize) -> RsaPrivateKey {
     let mut rng = rand::thread_rng();
     let priv_key = RsaPrivateKey::new(&mut rng, bits).expect("failed to generate a key");
@@ -39,6 +39,26 @@ pub fn generate_private_key(_item: TokenStream) -> TokenStream {
 
 #[cfg(test)]
 pub mod tests {
+    pub mod create_private_key {
+        use crate::create_private_key;
+
+        const TEST_HELLO_WORLD_STRING: &[u8] = b"hello world";
+
+        #[cfg(test)]
+        pub fn test_create_private_key() {
+            use rsa::Pkcs1v15Encrypt;
+
+            let priv_key = create_private_key(2048);
+            let mut rng = rand::thread_rng();
+            
+            let encrypted = priv_key.to_public_key()
+                .encrypt(&mut rng, Pkcs1v15Encrypt, TEST_HELLO_WORLD_STRING).unwrap();
+            let decrypted = priv_key.decrypt(Pkcs1v15Encrypt, &encrypted).unwrap();
+            
+            assert_eq!(TEST_HELLO_WORLD_STRING, decrypted)
+        }
+    }
+
     pub mod bits_from_token_stream {
         use crate::{
             bits_from_token_stream,
