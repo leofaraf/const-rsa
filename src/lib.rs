@@ -1,7 +1,7 @@
 use proc_macro::{Literal, TokenStream, TokenTree};
 use rsa::{pkcs1::EncodeRsaPrivateKey, Pkcs1v15Encrypt, RsaPrivateKey, RsaPublicKey};
 
-/// Creates RSA private key
+/// Creates RSA private key.
 fn create_private_key(bits: usize) -> RsaPrivateKey {
     let mut rng = rand::thread_rng();
     let priv_key = RsaPrivateKey::new(&mut rng, bits).expect("failed to generate a key");
@@ -10,9 +10,9 @@ fn create_private_key(bits: usize) -> RsaPrivateKey {
 
 const DEFAULT_2048_PRIVATE_KEY_BITS: usize = 2048;
 
-/// Accepts token steam
+/// Accepts token steam.
 /// If token stream contains `usize`, then returns it's value, 
-/// If not contains, then return `2048` bits
+/// If not contains, then return `2048` bits.
 fn bits_from_token_stream(_item: TokenStream) -> usize {
     match _item.into_iter().next() {
         Some(token) => match token {
@@ -25,6 +25,10 @@ fn bits_from_token_stream(_item: TokenStream) -> usize {
 }
 
 #[proc_macro]
+/// Accepts token steam.
+/// If token stream contains `usize`, then sets it as private key bits, 
+/// If not contains, then sets `2048` as private key bits.
+/// Returns pkcs1_der as bytes (`&'static [u8]`)
 pub fn generate_private_key(_item: TokenStream) -> TokenStream {
     let bits = bits_from_token_stream(_item);
     let priv_key = create_private_key(bits);
