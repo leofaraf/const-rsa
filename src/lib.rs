@@ -41,10 +41,25 @@ pub fn generate_private_key(_item: TokenStream) -> TokenStream {
     .parse().unwrap()
 }
 
-// #[proc_macro]
-// pub fn encrypt_string(_item: TokenStream) -> TokenStream {
+#[proc_macro]
+pub fn encrypt_string(_item: TokenStream) -> TokenStream {
+    todo!()
+}
 
-// }
+#[proc_macro]
+pub fn encrypt_bytes(_item: TokenStream) -> TokenStream {
+    todo!()
+}
+
+#[proc_macro]
+pub fn decrypt_string(_item: TokenStream) -> TokenStream {
+    todo!()
+}
+
+#[proc_macro]
+pub fn decrypt_bytes(_item: TokenStream) -> TokenStream {
+    todo!()
+}
 
 #[cfg(test)]
 pub mod tests {
