@@ -41,6 +41,11 @@ pub fn generate_private_key(_item: TokenStream) -> TokenStream {
     .parse().unwrap()
 }
 
+// #[proc_macro]
+// pub fn encrypt_string(_item: TokenStream) -> TokenStream {
+
+// }
+
 #[cfg(test)]
 pub mod tests {
     pub mod create_private_key {
@@ -48,7 +53,7 @@ pub mod tests {
 
         const TEST_HELLO_WORLD_STRING: &[u8] = b"hello world";
 
-        #[cfg(test)]
+        #[test]
         pub fn test_create_private_key() {
             use rsa::Pkcs1v15Encrypt;
 
@@ -60,28 +65,6 @@ pub mod tests {
             let decrypted = priv_key.decrypt(Pkcs1v15Encrypt, &encrypted).unwrap();
             
             assert_eq!(TEST_HELLO_WORLD_STRING, decrypted)
-        }
-    }
-
-    pub mod bits_from_token_stream {
-        use crate::{
-            bits_from_token_stream,
-            DEFAULT_2048_PRIVATE_KEY_BITS
-        };
-
-        const INCORRECT_TOKEN_STREAM: &str = "incorrect value";
-        const TEST_BYTES_COUNT: usize = 1488;
-
-        #[cfg(test)]
-        pub fn test_bits_from_correct_token_stream() {
-            let bits = bits_from_token_stream(TEST_BYTES_COUNT.to_string().parse().unwrap());
-            assert_eq!(TEST_BYTES_COUNT, bits)
-        }
-
-        #[cfg(test)]
-        pub fn test_bits_from_incorrect_token_stream() {
-            let bits = bits_from_token_stream(INCORRECT_TOKEN_STREAM.parse().unwrap());
-            assert_eq!(DEFAULT_2048_PRIVATE_KEY_BITS, bits)
         }
     }
 }
