@@ -31,17 +31,17 @@ HQ1a0uMPajq0WykJTQwHH8Xp3bmdf8tV9/ersst8/ZaZw8I2cVs5LB7ITGg50R7c
 F1eoz1rhDByXDbnvO8PIUV27BSIXlKHEW1Urlo7WU9lYPCcjf9FD
 -----END RSA PRIVATE KEY-----", 
     [
-        ("decryped_hello", "hello"),
-        ("decryped_world", "world"),
+        ("decrypted_hello", "hello"),
+        ("decrypted_world", "world"),
     ]
 );
 
 #[test]
 fn test_hello() {
-    assert_eq!(get_decryped_hello(), "hello")
+    assert_eq!(get_decrypted_hello(), "hello")
 }
 
 #[test]
 fn test_world() {
-    assert_eq!(get_decryped_world(), "world")
+    assert_eq!(get_decrypted_world(), "world")
 }
