@@ -1,6 +1,9 @@
-use proc_macro::{Literal, TokenStream, TokenTree};
-use rsa::{pkcs1::{DecodeRsaPrivateKey, EncodeRsaPrivateKey, EncodeRsaPublicKey}, Pkcs1v15Encrypt, RsaPrivateKey, RsaPublicKey};
-use syn::{parse_macro_input, LitByteStr};
+use base64::{prelude::BASE64_STANDARD, Engine};
+use proc_macro::{TokenStream, TokenTree};
+use proc_macro2::{Ident, Literal, Span};
+use rand::{thread_rng, Rng};
+use rsa::{pkcs1::{DecodeRsaPrivateKey, DecodeRsaPublicKey, EncodeRsaPrivateKey}, Pkcs1v15Encrypt, RsaPrivateKey, RsaPublicKey};
+use syn::{parse::{Parse, ParseStream}, parse_macro_input, token::{Bracket, In}, Error, Expr, ExprArray, ExprTuple, Lit, LitByteStr, LitStr, Result, Token};
 
 /// Creates RSA private key.
 fn create_private_key(bits: usize) -> RsaPrivateKey {
@@ -10,6 +13,14 @@ fn create_private_key(bits: usize) -> RsaPrivateKey {
 }
 
 const DEFAULT_2048_PRIVATE_KEY_BITS: usize = 2048;
+
+fn bytes_from_token_stream(_item: TokenStream) -> &'static [u8] {
+    todo!()
+}
+
+fn string_from_token_stream(_item: TokenStream) -> String {
+    todo!()
+}
 
 /// Accepts token steam.
 /// If token stream contains `usize`, then returns it's value, 
@@ -46,6 +57,115 @@ pub fn generate_private_key(_item: TokenStream) -> TokenStream {
     ).parse().unwrap()
 }
 
+#[derive(Debug)]
+struct Input {
+    pub rsa_key: String,
+    pub nested_array: Vec<(String, String)>,
+}
+
+// Function to extract string literals from expressions
+fn extract_string_literal(expr: &Expr) -> Option<String> {
+    if let Expr::Lit(expr_lit) = expr {
+        if let Lit::Str(lit_str) = &expr_lit.lit {
+            return Some(lit_str.value());
+        }
+    }
+    None
+}
+
+impl Parse for Input {
+    fn parse(input: ParseStream) -> Result<Self> {
+        // Parse the RSA key
+        let rsa_key: LitStr = input.parse()?;
+
+        let _comma: Token![,] = input.parse()?;
+
+        let expr: ExprArray = input.parse()?;
+
+        let mut result = Vec::new();
+
+        // Iterate over each tuple in the array
+        for elem in expr.elems.iter() {
+            if let Expr::Tuple(tuple) = elem {
+                if tuple.elems.len() == 2 {
+                    let key_expr = &tuple.elems[0];
+                    let value_expr = &tuple.elems[1];
+
+                    let key_str = extract_string_literal(key_expr);
+                    let value_str = extract_string_literal(value_expr);
+
+                    if let (Some(key), Some(value)) = (key_str, value_str) {
+                        result.push((key, value));
+                    } else {
+                        return Err(Error::new_spanned(
+                            tuple,
+                            "Expected string literals for both key and value",
+                        ));
+                    }
+                } else {
+                    return Err(Error::new_spanned(
+                        tuple,
+                        "Expected a tuple of 2 elements for key-value pair",
+                    ));
+                }
+            } else {
+                return Err(Error::new_spanned(elem, "Expected a tuple expression"));
+            }
+        }
+
+        Ok(Input {
+            nested_array: result,
+            rsa_key: rsa_key.value(),
+        })
+    }
+}
+
+
+
+#[proc_macro]
+pub fn generate_encrypted_strings(_item: TokenStream) -> TokenStream {
+    let parsed = parse_macro_input!(_item as Input);
+
+    let rsa = parsed.rsa_key.clone();
+    let mut results = vec![];
+
+    let priv_key = match RsaPrivateKey::from_pkcs1_pem(&parsed.rsa_key) {
+        Ok(priv_key) => priv_key,
+        Err(_) => return quote::quote! {
+            compile_error!("first arg should be PEM RSA private key")
+        }.into()
+    };
+
+    let pub_key = priv_key.to_public_key();
+    let mut rng = thread_rng();
+    
+    for item in parsed.nested_array {
+        let encryped_string = pub_key.encrypt(&mut rng, Pkcs1v15Encrypt, item.1.as_bytes()).unwrap();
+
+        let span = Span::call_site();
+        let function_name = Ident::new(&format!("get_{}", item.0), span);
+        let bytes = BASE64_STANDARD.encode(encryped_string);
+
+        results.push(
+            quote::quote! {
+                fn #function_name() -> String {
+                    let priv_key = RsaPrivateKey::from_pkcs1_pem(#rsa).unwrap();
+                    let decrypted = BASE64_STANDARD.decode(#bytes).unwrap();
+                    let bytes = priv_key.decrypt(Pkcs1v15Encrypt, &decrypted).unwrap();
+
+                    String::from_utf8(bytes).unwrap()
+                }
+            }
+        )
+    }
+
+    println!("{}", format!("{}", results[0]));
+
+    quote::quote! {
+        #(#results)*
+    }.into()
+}
+
 #[proc_macro]
 pub fn encrypt_from_pkcs1_der(_item: TokenStream) -> TokenStream {
     todo!()
@@ -63,7 +183,9 @@ pub fn encrypt_from_pkcs1_der_private(_item: TokenStream) -> TokenStream {
 
 #[proc_macro]
 pub fn encrypt_from_pkcs1_pem_private(_item: TokenStream) -> TokenStream {
-    todo!()
+    let input = parse_macro_input!(_item as LitStr);
+
+    "&[]".parse().unwrap()
 }
 
 #[proc_macro]
