@@ -11,7 +11,7 @@ path = "src/lib.rs"
 [dependencies]
 rand = "0.8.5"
 rsa = { version = "0.9.6", features = ["pem"] }
-syn = { version = "2.0.76", features = ["full"] }
+syn = { version = "2", features = ["full"] }
 quote = "1.0"
 base64 = "0.22"
 proc-macro2 = "1"
