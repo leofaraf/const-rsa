@@ -148,7 +148,7 @@ pub fn generate_encrypted_strings(_item: TokenStream) -> TokenStream {
 
         results.push(
             quote::quote! {
-                fn #function_name() -> String {
+                pub fn #function_name() -> String {
                     let priv_key = RsaPrivateKey::from_pkcs1_pem(#rsa).unwrap();
                     let decrypted = BASE64_STANDARD.decode(#bytes).unwrap();
                     let bytes = priv_key.decrypt(Pkcs1v15Encrypt, &decrypted).unwrap();
